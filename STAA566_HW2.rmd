@@ -61,8 +61,7 @@ SLP <- ggplotly(SLPlot)  %>%
   rangeslider() %>%
   layout(hovermode = "x")
 SLP
-# save as a widget
-saveWidget(as_widget(SLP), "SeaLevel_JB.html")
+
 
 ```
 
