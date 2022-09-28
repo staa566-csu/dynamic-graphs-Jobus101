@@ -1,0 +1,69 @@
+---
+title: "STAA566_HW2 Dynamic Figure of Sea Levels in the United States"
+author: "John Bushey"
+date: "9/27/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Data Source: The data source I used for this assignment is data from the Actuary Climate Index. I speciffically wanted to look at the average Sea level differences between the United states and Canada, which is the average of the different Sea level stations found on the coastline in each country. I went ahead and hid the exact regions.
+
+What do I want to convey in this figure: I wanted to show the differences in Sea level based on Geographic location. For example, the further south you move, we sea an increase in sea level.
+
+What Functionality and formatting did you put in this picture and why:
+
+1. I put in hoverlabels through just changing the ggplot to plotly. I wanted to do this, since there are over 700 pionts of data. If someone wanted to look at a specif point, they would be able to do this by hovering over the point.
+
+2. I added a range finder. Since this data spans over 50 years, and is graphed on a monthly basis, I wanted the end user to be able to zoom in and out on a specific timeframe realitly easily.
+
+
+
+
+```{r}
+#Bringing in data from the Actuaries Climate Index
+library(ggplot2)
+library(reshape2)
+library(plotly)
+library(htmlwidgets)
+SL <- readxl::read_excel("C:/Users/14252/Desktop/ACI_JDB.xlsx",sheet = 2)
+SL$time <-paste(SL$Year,"-",SL$Month,"-01")
+
+#change to long format
+SL <- melt(SL, id.vars= c("time","Year", "Month"))
+#SL
+#change time from character to date
+SL$time <- as.Date(SL$time, format = "%Y - %m -%d")
+#do it again for the ACI data
+#CDD <-readxl::read_excel("C:/Users/14252/Desktop/ACI_JDB.xlsx",sheet = 3)
+#CDD$time <-paste(CDD$year,"-",CDD$month,"-01")
+#CDD <- melt(CDD, id.vars= c("time","year", "month"))
+#CDD$time <- as.Date(CDD$time, format = "%Y -%m -%d")
+#Plot ` only plotting average of USA versus canada
+SLPlot <-ggplot(data = SL[!SL$variable %in% c("ALA", "CAR", "CEA", "CWP", "MID", "NEA", "NEF", "NPL", "NWP", "SEA", "SPL", "SWP", "USC"),], mapping= aes(x = time, y = value, group = (variable), col = variable)) +
+  geom_line() +
+  labs(title = "Sea level differences between USA and Canada",
+       subtitle = "Plot of averages in mm change from 1961", 
+       caption = "Data source: Actuary Climate Index",
+       y = "Change in Millimeters of Sea level from base(1969)")
+
+
+#ACIplot <-ggplot(data = CDD[!CDD$variable %in% c("ALA", "CAR", "CEA", "CWP", "MID", "NEA", "NEF", "NPL", "NWP", "SEA", "SPL", "SWP", "USC"),], mapping= aes(x = time, y = value, group = (variable), col = variable)) +
+  #geom_line(linetype = "dashed") +
+  #labs(title = "ACI differences between USA and Canada",
+       #subtitle = "Plot of averages in ACI from 1961", 
+      # caption = "Data source: Actuary Climate Index",
+       #y = "ACI")
+#ACIplot
+SLP <- ggplotly(SLPlot)  %>%
+  rangeslider() %>%
+  layout(hovermode = "x")
+SLP
+# save as a widget
+saveWidget(as_widget(SLP), "SeaLevel_JB.html")
+
+```
+
+
